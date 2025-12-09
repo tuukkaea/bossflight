@@ -235,18 +235,48 @@ function updatePlayerDataFromState(state){
     }
 }
 
-window.flyToAirport = async function(airportId){
-    const state = await fetchGameState(sessionId)
-    const targetAirport = gameData.airports.find(a=> a.id === airportId)
-    map.closePopup()
-    const currentAirport = state.current_airport
-    const result = await updateGameState(sessionId, airportId, true)
-    if(result){
-        await refreshGameState()
-    }
+    window.flyToAirport = async function(airportId){
+        const state = await fetchGameState(sessionId)
+        const targetAirport = gameData.airports.find(a=> a.id === airportId)
+        map.closePopup()
+        const currentAirport = state.current_airport
 
-
+    const flightLine = L.polyline(
+            [[currentAirport.latitude, currentAirport.longitude], 
+            [targetAirport.latitude, targetAirport.longitude]], 
+            {
+                color: '#9F27F5',
+                weight: 3,
+                opacity: 0,
+                dashArray: '10, 10',
+                className: 'flight-path'
+            }
+        ).addTo(map);
+        
+        let opacity = 0;
+        const fadeIn = setInterval(() => {
+            opacity += 0.05;
+            flightLine.setStyle({ opacity: Math.min(opacity, 0.8) });
+            if (opacity >= 0.8) clearInterval(fadeIn);
+        }, 30);
+        
+        setTimeout(async () => {
+            const fadeOut = setInterval(() => {
+                opacity -= 0.1;
+                flightLine.setStyle({ opacity: Math.max(opacity, 0) });
+                if (opacity <= 0) {
+                    clearInterval(fadeOut);
+                    map.removeLayer(flightLine);
+                }
+            }, 30);
+            
+            const result = await updateGameState(sessionId, airportId, true);
+            if (result) {
+                await refreshGameState();
+            }
+        }, 1500);
 }
+
 
 function showRandomChallenge(){
     const challengeSection = document.getElementById('challenge-section')
