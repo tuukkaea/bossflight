@@ -1,4 +1,7 @@
 import { calculateDistance, calculateBearing, getCompassDirection } from './utils.js';
+import { initializeCustomMap, createPurpleMarker } from './map.js';
+
+
 
 let map;
 
@@ -21,26 +24,32 @@ async function fetchDatabase() {
 
 
 function renderAirportsOnMap(airports) {
+    const purpleMarker = createPurpleMarker();
+    
     airports.forEach(airport => {
-        L.marker([airport.latitude_deg, airport.longitude_deg])
-            .addTo(map)
-            .bindPopup(`<b>${airport.name}`);
+        const marker = L.marker([airport.latitude, airport.longitude], { icon: purpleMarker })
+            .addTo(map);
+        
+        const popupContent = `
+            <div class="airport-popup">
+                <b>${airport.name}</b>
+                <p class="airport-code">${airport.iata_code} / ${airport.icao_code}</p>
+                <p class="airport-location">${airport.city}, ${airport.country_code}</p>
+                <button class="fly-button" onclick="flyToAirport(${airport.id})">
+                     Fly Here
+                </button>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
     });
 }
 
 
-function initializeMap() {
-    map = L.map('map').setView([20, 0], 2); // center world
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-}
-
 
 function initializeGame() {
-    initializeMap();
+    map = initializeCustomMap('map');
+    
 
     fetchDatabase().then(data => {
         console.log('db:', data);
