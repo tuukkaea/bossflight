@@ -82,6 +82,16 @@ async function fetchChallenge(sessionId) {
    } 
 }
 
+async function loadChallenge(){
+    const challenge = await fetchChallenge(sessionId);
+    if(!challenge){
+        console.log('Failed to load challenge')
+        return
+    }
+    showChallenge(challenge)
+
+}
+
 async function updateGameState(sessionId, currentAirportId, passedChallenge){
     try{
         const response = await fetch(`${API_URL}update_state`,{
@@ -235,50 +245,52 @@ function updatePlayerDataFromState(state){
     }
 }
 
-    window.flyToAirport = async function(airportId){
-        const state = await fetchGameState(sessionId)
-        const targetAirport = gameData.airports.find(a=> a.id === airportId)
-        map.closePopup()
-        const currentAirport = state.current_airport
+window.flyToAirport = async function(airportId){
+    const state = await fetchGameState(sessionId)
+    const targetAirport = gameData.airports.find(a=> a.id === airportId)
+    map.closePopup()
+    const currentAirport = state.current_airport
 
-    const flightLine = L.polyline(
-            [[currentAirport.latitude, currentAirport.longitude], 
-            [targetAirport.latitude, targetAirport.longitude]], 
-            {
-                color: '#9F27F5',
-                weight: 3,
-                opacity: 0,
-                dashArray: '10, 10',
-                className: 'flight-path'
+const flightLine = L.polyline(
+        [[currentAirport.latitude, currentAirport.longitude], 
+        [targetAirport.latitude, targetAirport.longitude]], 
+        {
+            color: '#9F27F5',
+            weight: 3,
+            opacity: 0,
+            dashArray: '10, 10',
+            className: 'flight-path'
+        }
+    ).addTo(map);
+    
+    let opacity = 0;
+    const fadeIn = setInterval(() => {
+        opacity += 0.05;
+        flightLine.setStyle({ opacity: Math.min(opacity, 0.8) });
+        if (opacity >= 0.8) clearInterval(fadeIn);
+    }, 30);
+    
+    setTimeout(async () => {
+        const fadeOut = setInterval(() => {
+            opacity -= 0.1;
+            flightLine.setStyle({ opacity: Math.max(opacity, 0) });
+            if (opacity <= 0) {
+                clearInterval(fadeOut);
+                map.removeLayer(flightLine);
             }
-        ).addTo(map);
-        
-        let opacity = 0;
-        const fadeIn = setInterval(() => {
-            opacity += 0.05;
-            flightLine.setStyle({ opacity: Math.min(opacity, 0.8) });
-            if (opacity >= 0.8) clearInterval(fadeIn);
         }, 30);
         
-        setTimeout(async () => {
-            const fadeOut = setInterval(() => {
-                opacity -= 0.1;
-                flightLine.setStyle({ opacity: Math.max(opacity, 0) });
-                if (opacity <= 0) {
-                    clearInterval(fadeOut);
-                    map.removeLayer(flightLine);
-                }
-            }, 30);
-            
-            const result = await updateGameState(sessionId, airportId, true);
-            if (result) {
-                await refreshGameState();
-            }
-        }, 1500);
+        const result = await updateGameState(sessionId, airportId, true);
+        if (result) {
+            await refreshGameState();
+            await loadChallenge();
+        }
+    }, 1500);
+
 }
 
 
-function showRandomChallenge(){
+function showChallenge(challenge){
     const challengeSection = document.getElementById('challenge-section')
 
     const challengeQuestion = document.getElementById('challenge-question')
@@ -287,36 +299,26 @@ function showRandomChallenge(){
 
     const multipleChoiceSection = document.getElementById('multiple-choice-section')
 
-    const challengeType = Math.random() > 0.5 ? "open" : "multiple_choice"; 
-    if (challengeType === "open" && gameData.question_tasks.length > 0){
-        const randomQuestion = gameData.question_tasks[Math.floor(Math.random()*gameData.question_tasks.length)];
-        currentChallenge = {
-            type:"open",
-            data:randomQuestion
-        }
-        challengeQuestion.textContent = randomQuestion.question
+    if(challengeSection) challengeSection.style.display = "block"
+
+    if (challenge.type === "open_question"){
+        challengeQuestion.textContent = challenge.question
         openAnswerSection.style.display ="block"
         multipleChoiceSection.style.display ="none"
     }
     
-    else if(gameData.multiple_choice_questions.length>0){
-        const randomMultipleChoiceQuestion = gameData.multiple_choice_questions[Math.floor(Math.random()*gameData.multiple_choice_questions.length)];
-        currentChallenge = {
-            type:"multiple_choice",
-            data:randomMultipleChoiceQuestion
-        }
-        challengeQuestion.textContent = randomMultipleChoiceQuestion.question
+    else if(challenge.type = "multiple_choice"){
+        challengeQuestion.textContent = challenge.question
         openAnswerSection.style.display ="none"
         multipleChoiceSection.style.display ="block"
 
-        const answerOptions = document.getElementById('answer-choice-options')
-        // clear any previous options before adding new ones
+        const answerOptions = document.getElementById('answer-options')
         answerOptions.innerHTML = "";
-        randomMultipleChoiceQuestion.answers.forEach(answer=>{
+        challenge.options.forEach(option=>{
             const button = document.createElement("button")
-            button.textContent = answer.answer
+            button.textContent = option.name
             button.className = "answer-option"
-            button.onclick = () => submitMultiplechoiceAnswer(answer.is_correct)
+            button.onclick = () => submitMultiplechoiceAnswer(option.is_correct)
             answerOptions.appendChild(button)
 
         })
