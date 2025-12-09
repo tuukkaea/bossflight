@@ -1,7 +1,9 @@
 import { calculateDistance, calculateBearing, getCompassDirection } from './utils.js';
 import { initializeCustomMap, createPurpleMarker } from './map.js';
 
+const API_URL = "http://127.0.0.1:5000/"
 
+let sessionId = null
 
 let map;
 
@@ -9,19 +11,103 @@ let gameData = null
 
 let currentChallenge = null
 
-async function fetchDatabase() {
-    try {
-        let response = await fetch('database.json');
-        if (!response.ok) {
-            throw new Error('Network err ' + response.statusText);
+let currentAirportMarker = null;
+
+async function fetchAirports() {
+   try{
+    const response = await fetch(`${API_URL}airports`);
+    if (!response.ok) {
+            throw new Error('Failed to fetch airport');
         }
-        let data = await response.json();
+        const data = await response.json();
+        console.log(data)
         return data;
     } catch (error) {
         console.error('error:', error);
+   } 
+}
+async function createNewGame(difficulty, playerName){
+    try{
+        const response = await fetch(`${API_URL}new_game`,{
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                difficulty: difficulty,
+                player_name: playerName,
+
+            })
+        });
+        if(!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create game');
+
+        }
+        const data = await response.json();
+        return data.session_id
     }
+    catch (error) {
+        console.error('error: Creating new game', error,);
+        return null}
 }
 
+async function fetchGameState(sessionId) {
+   try{
+    const response = await fetch(`${API_URL}game_state/${sessionId}`);
+    if (!response.ok) {
+            throw new Error('failed to fetch game state');
+        }
+        const data = await response.json();
+        console.log(data)
+        return data;
+    } catch (error) {
+        console.error('Failed to fetch game state', error);
+        return null
+   } 
+}
+
+async function fetchChallenge(sessionId) {
+   try{
+    const response = await fetch(`${API_URL}challenge/${sessionId}`);
+    if (!response.ok) {
+            throw new Error('failed to fetch challenge');
+        }
+        const data = await response.json();
+        console.log(data)
+        return data;
+    } catch (error) {
+        console.error('Failed to fetch challenge', error);
+        return null
+   } 
+}
+
+async function updateGameState(sessionId, currentAirportId, passedChallenge){
+    try{
+        const response = await fetch(`${API_URL}update_state`,{
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                session_id: sessionId,
+                current_airport_id: currentAirportId,
+                passed_challenge: passedChallenge,
+
+            })
+        });
+        if(!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to update gamestate');
+
+        }
+        const data = await response.json();
+        return data
+    }
+    catch (error) {
+        console.error('error: Updating gamestate', error,);
+        return null}
+}
 
 function renderAirportsOnMap(airports) {
     const purpleMarker = createPurpleMarker();
@@ -45,75 +131,121 @@ function renderAirportsOnMap(airports) {
     });
 }
 
-
-
-function initializeGame() {
+async function initializeGame() {
     map = initializeCustomMap('map');
-    
+    const playerName = "Default"
+    const difficulty = "Easy"
+    const airports = await fetchAirports();
+    if (!airports || airports.length === 0) {
+        console.error('Failed to load airports');
+        return;
+    }
 
-    fetchDatabase().then(data => {
-        console.log('db:', data);
-        renderAirportsOnMap(data.airports);
-        gameData = data
-        updatePlayerData(data.players[0], data.airports, data.players_airports); 
-        showRandomChallenge()
-        
-    });
+    gameData = { airports };
+    renderAirportsOnMap(airports);
+
+    sessionId = await createNewGame(difficulty, playerName);
+    if(!sessionId){
+        console.error('error: failed to create session')
+        return 
+    }
+    console.log('Session created', sessionId)
+
+    await refreshGameState()
 }
 
-function updatePlayerData(player, airports, playersAirports){
+async function refreshGameState() {
+    const state = await fetchGameState(sessionId)
+    if(!state){
+        console.log('Failed to refresh game state')
+        return
+    }
+    updatePlayerDataFromState(state)
+    console.log(state)
+}
+
+function updatePlayerDataFromState(state){
     const playerName = document.getElementById('player-name');
-    playerName.textContent = player.name
+    playerName.textContent = state.player.name
 
     const batteryLevel = document.getElementById('player-battery');
-    batteryLevel.textContent = player.battery_level + '%'
+    batteryLevel.textContent = state.battery_level + '%'
 
     const playerDifficulty = document.getElementById('difficulty');
-    playerDifficulty.textContent = player.difficulty_level
+    playerDifficulty.textContent = state.difficulty_level
 
     const playerLocation = document.getElementById('current-location');
-    const currentAirport = airports.find(airport => airport.id === player.current_location);
+    const currentAirport = state.current_airport;
  
     playerLocation.textContent = currentAirport.name
 
-    const destinationsVisited = document.getElementById('destinations-visited');
-    const visitedCount = playersAirports.filter(pa => pa.player_id === player.id && pa.visited_at !== null).length;
-    destinationsVisited.textContent = visitedCount 
+    const destinationsVisited = "5";
 
 
     const distanceToBoss = document.getElementById('distance');
-    const bossAirportData = playersAirports.find(pa => pa.player_id === player.id && pa.is_boss_airport === true);
     
+    const bossAirport = state.boss_airport;
 
-    if (bossAirportData && currentAirport) {
-        const bossAirport = airports.find(a => a.ident === bossAirportData.airport_ident);
-        if (bossAirport) {
-            const distance = calculateDistance(
-                currentAirport.latitude_deg, 
-                currentAirport.longitude_deg,
-                bossAirport.latitude_deg,
-                bossAirport.longitude_deg
-            );
-            distanceToBoss.textContent = Math.round(distance) + ' km';
-            
-            const directionElement = document.getElementById('direction');
-            const bearing = calculateBearing(
-                currentAirport.latitude_deg,
-                currentAirport.longitude_deg,
-                bossAirport.latitude_deg,
-                bossAirport.longitude_deg
-            );
-            const compassDirection = getCompassDirection(bearing);
-            directionElement.textContent = compassDirection;
-            
-            const compassArrow = document.getElementById('compass-arrow');
-            if (compassArrow) {
+    const distance = calculateDistance(
+        currentAirport.latitude, 
+        currentAirport.longitude,
+        bossAirport.latitude,
+        bossAirport.longitude
+    );
+    distanceToBoss.textContent = Math.round(distance) + ' km';
 
-                const adjustedRotation = bearing - 90;
-                compassArrow.style.transform = `rotate(${adjustedRotation}deg)`;
-            }
-        }
-    } 
+    const directionElement = document.getElementById('direction');
+    const bearing = calculateBearing(
+        currentAirport.latitude,
+        currentAirport.longitude,
+        bossAirport.latitude,
+        bossAirport.longitude
+    );
+    const compassDirection = getCompassDirection(bearing);
+    directionElement.textContent = compassDirection;
+
+    const compassArrow = document.getElementById('compass-arrow');
+    if (compassArrow) {
+
+        const adjustedRotation = bearing - 90;
+        compassArrow.style.transform = `rotate(${adjustedRotation}deg)`;
+    }
+    
+    if (currentAirportMarker) {
+        map.removeLayer(currentAirportMarker);
+    }
+
+    if (currentAirport) {
+        const currentIcon = L.divIcon({
+            className: 'custom-purple-marker current-airport-marker',
+            html:` 
+                <div class="marker-dot">
+                    <div class="dot-glow"></div>
+                    <div class="dot-center"></div>
+                </div>
+            `,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+            popupAnchor: [0, -8]
+        });
+
+        currentAirportMarker = L.marker([currentAirport.latitude, currentAirport.longitude], { icon: currentIcon })
+            .addTo(map)
+            .bindPopup(`<b class="text-white">Current Location: ${currentAirport.name}</b>`);
+    }
+}
+
+window.flyToAirport = async function(airportId){
+    const state = await fetchGameState(sessionId)
+    const targetAirport = gameData.airports.find(a=> a.id === airportId)
+    map.closePopup()
+    const currentAirport = state.current_airport
+    const result = await updateGameState(sessionId, airportId, true)
+    if(result){
+        await refreshGameState()
+    }
+
+
 }
 
 function showRandomChallenge(){
@@ -148,6 +280,8 @@ function showRandomChallenge(){
         multipleChoiceSection.style.display ="block"
 
         const answerOptions = document.getElementById('answer-choice-options')
+        // clear any previous options before adding new ones
+        answerOptions.innerHTML = "";
         randomMultipleChoiceQuestion.answers.forEach(answer=>{
             const button = document.createElement("button")
             button.textContent = answer.answer
@@ -163,6 +297,7 @@ function showRandomChallenge(){
     }
 
 function submitMultiplechoiceAnswer(isCorrect){
+    const answerOptions = document.getElementById('answer-choice-options')
     answerOptions.innerHTML = "";
     const resultElement = document.getElementById('challenge-result')
     const buttons = document.querySelectorAll(".answer-option")
@@ -174,6 +309,7 @@ function submitMultiplechoiceAnswer(isCorrect){
         resultElement.textContent = "Incorrect answer!"
         resultElement.className = "challenge-result incorrect"
     }
+    resultElement.style.display = "block"
 }
 
 window.submitOpenAnswer = function(){
