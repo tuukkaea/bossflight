@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="startmenu.js" defer></script>
+    <title>StartGame</title>
+</head>
+<body>
+
+<header>
+    <h1>BossFlights</h1>
+</header>
+
+<main>
+    <button id="start">Start game</button>
+    <button id="rules">How to play</button>
+    <button id="about-us">About us</button>
+
+    <section id="player-setup" class="hidden">
+        <h2>New Game</h2>
+
+        <label>
+            Player name:
+            <input type="text" id="player-name" placeholder="Your name">
+        </label>
+
+        <label>
+            Difficulty:
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </label>
+        <button id="start-game-confirm">Start!</button>
+    </section>
+
+    <section id="show-rules" class="hidden">
+        <h2>How to Play</h2>
+
+        <p>
+            Your goal is to <strong>find the Boss Arena</strong>, which is randomly selected
+            from the game database at the start of each playthrough.
+        </p>
+
+        <p>
+            Travel between airports to search for the correct location. The game tracks
+            <strong>how many airports you've visited</strong>.
+        </p>
+
+        <h3>Challenges</h3>
+        <ul>
+            <li>Every time you fly to a new airport, you will receive a <strong>challenge</strong>.</li>
+            <li>Challenges can be:
+                <ul>
+                    <li><strong>Multiple-choice questions</strong>, or</li>
+                    <li><strong>Open-answer tasks</strong>, such as math problems.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Battery System</h3>
+        <ul>
+            <li>You begin the game with <strong>100% battery</strong>, which is also the maximum battery capacity.</li>
+            <li><strong>Flying does NOT consume battery.</strong></li>
+            <li>
+                When you answer a challenge correctly, you <strong>gain additional battery</strong>.
+                The amount of battery you earn depends on the difficulty level:
+                <ul>
+                    <li>Easy</li>
+                    <li>Medium</li>
+                    <li>Hard</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Winning the Game</h3>
+        <p>
+            Continue traveling and completing challenges until you discover the
+            <strong>Boss Arena</strong>. Once you find it, <strong>you win the game</strong>.
+        </p>
+    </section>
+
+    <section id="show-about-us" class="hidden">
+        <h2>About us</h2>
+
+        <ul>
+            <li>Kim</li>
+            <li>Lassi</li>
+            <li>Eeli</li>
+            <li>Tuukka</li>
+        </ul>
+
+    </section>
+</main>
+
+</body>
+</html>
