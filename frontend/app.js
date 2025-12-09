@@ -329,7 +329,7 @@ function showChallenge(challenge){
     }
 
 function submitMultiplechoiceAnswer(isCorrect){
-    const answerOptions = document.getElementById('answer-choice-options')
+    const answerOptions = document.getElementById('answer-options')
     answerOptions.innerHTML = "";
     const resultElement = document.getElementById('challenge-result')
     const buttons = document.querySelectorAll(".answer-option")
@@ -352,7 +352,7 @@ window.submitOpenAnswer = function(){
         alert("Answer the question!")
         return
     }
-    const correctAnswer = currentChallenge.data.correct_answer.toLowerCase()
+    const correctAnswer = currentChallenge.correct_answer.toLowerCase()
     const isCorrect = userAnswer.toLowerCase() === correctAnswer
 
     if(isCorrect){
