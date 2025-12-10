@@ -254,6 +254,7 @@ function updatePlayerDataFromState(state){
     const bossAirport = state.boss_airport;
     const directionElement = document.getElementById('direction');
     const compassArrow = document.getElementById('compass-arrow');
+    const difficulty = getCurrentDifficulty();
 
     if (currentAirport && bossAirport) {
         const distance = calculateDistance(
@@ -282,6 +283,23 @@ function updatePlayerDataFromState(state){
         directionElement.textContent = '-';
         if (compassArrow) {
             compassArrow.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    if (compassArrow) {
+        if (difficulty === 'medium') {
+            compassArrow.style.filter = 'blur(4px)';
+        } else if (difficulty === 'hard') {
+            compassArrow.style.filter = 'blur(4px)';
+        } else {
+            compassArrow.style.filter = 'none';
+        }
+    }
+    if (directionElement) {
+        if (difficulty === 'hard') {
+            directionElement.style.filter = 'blur(4px)';
+        } else {
+            directionElement.style.filter = 'none';
         }
     }
     
