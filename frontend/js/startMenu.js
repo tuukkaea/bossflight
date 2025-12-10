@@ -1,6 +1,6 @@
 'use strict';
 
-const API_URL = 'http://127.0.0.1:5000';
+const API_URL = 'https://bossflights-api.up.railway.app:5000';
 
 const startButton = document.getElementById('start');
 const playerSetup = document.getElementById('player-setup');
