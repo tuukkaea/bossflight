@@ -184,7 +184,7 @@ async function initializeGame() {
     
     if(!startMenuData.playerName || !startMenuData.difficulty){
         alert('Please start the game from the start menu so we know who is playing.');
-        window.location.href = 'index.html';
+        window.location.href = 'start.html';
         return;
     }
 
@@ -507,6 +507,7 @@ function adjustBatteryLocally(delta){
         }
     }
     const batteryElement = document.getElementById('player-battery')
+    const batteryStatus = document.getElementById('battery-status')
     let currentValue = typeof lastKnownState.battery_level === 'number'
         ? lastKnownState.battery_level
         : 0
@@ -520,6 +521,29 @@ function adjustBatteryLocally(delta){
     lastKnownState.battery_level = nextValue
     if(batteryElement){
         batteryElement.textContent = `${nextValue}%`
+    }
+
+    if(batteryStatus && delta !== 0){
+        const sign = delta > 0 ? '+' : ''
+        const statusText = `${sign}${delta}%`
+        const statusColor = delta > 0 ? '#00ff88' : '#ff0000'
+
+        batteryStatus.textContent = statusText
+        batteryStatus.style.color = statusColor
+        batteryStatus.style.display = 'block'
+
+        setTimeout(()=>{
+            batteryStatus.style.opacity='0'
+            batteryStatus.style.transition = 'opacity 0.5s ease-out'
+        }, 1500)
+
+        setTimeout(()=>{
+            batteryStatus.textContent = ''
+            batteryStatus.style.opacity = '1'
+            batteryStatus.style.transition = 'none'
+            batteryStatus.style.display = 'none'
+        }, 2000)
+
     }
 }
 
@@ -599,6 +623,13 @@ async function submitMultiplechoiceAnswer(isCorrect){
             resultElement.textContent = "Incorrect answer!"
         }
         resultElement.className = "challenge-result incorrect"
+        // apply battery penalty for incorrect multiple-choice answers
+        try{
+            adjustBatteryLocally(-getChallengeRewardAmount())
+            await checkForGameConclusion(lastKnownState)
+        } catch (e) {
+            console.error('Error applying penalty for incorrect answer', e)
+        }
     }
     resultElement.style.display = "block"
     pendingChallengeSuccess = Boolean(isCorrect)
@@ -632,6 +663,13 @@ window.submitOpenAnswer = async function(){
     } else {
         resultElement.textContent = "Incorrect answer! The correct answer is: " + currentChallenge.answer
         resultElement.className = "challenge-result incorrect"
+        // apply battery penalty for incorrect open answers
+        try{
+            adjustBatteryLocally(-getChallengeRewardAmount())
+            await checkForGameConclusion(lastKnownState)
+        } catch (e) {
+            console.error('Error applying penalty for incorrect open answer', e)
+        }
     }
     resultElement.style.display = "block"
     const answerInput = document.getElementById('answer-input')
