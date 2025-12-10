@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/startMenu.js" defer></script>
+    <title>BossFlights</title>
+</head>
+<body class="start-page">
+
+<header>
+    <h1 class="logo"><span class="glow">Boss</span>Flights</h1>
+</header>
+
+<main class="start-main">
+    <section class="start-hero card">
+        <p class="eyebrow">Global Exploration Game</p>
+        <h2>Plan your flight,<br>outsmart the challenges.</h2>
+        <p class="subtitle">
+            Race through the world's busiest airports, solve puzzles and keep your drone powered long enough
+            to locate the secret Boss Arena.
+        </p>
+
+        <div class="menu-buttons">
+            <button id="start" class="primary-btn">New Game</button>
+            <button id="rules" class="ghost-btn">How to Play</button>
+            <button id="about-us" class="ghost-btn">About Us</button>
+        </div>
+    </section>
+
+    <section id="panel-stage" class="card start-card hidden"></section>
+
+    <div id="panel-templates" class="panel-templates">
+        <section id="player-setup" class="panel-content hidden">
+            <h2>New Game</h2>
+            <p class="subtitle">Tell us who is flying and pick your difficulty.</p>
+
+            <label class="input-label">
+                Player name
+                <input type="text" id="player-name" placeholder="Player Name">
+            </label>
+
+            <label class="input-label">
+                Difficulty
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </label>
+            <button id="start-game-confirm" class="primary-btn full-width">Launch Game</button>
+        </section>
+
+        <section id="show-rules" class="panel-content hidden">
+            <h2>How to Play</h2>
+            <p>
+                Your mission is to <strong>find the Boss Arena</strong>, randomly selected at the start of each game.
+                Hop between airports, solve challenges and keep your drone powered.
+            </p>
+            <ul class="bullet-list">
+                <li>Every flight costs battery based on your difficulty.</li>
+                <li>Answer challenges correctly to earn extra energy instantly.</li>
+                <li>Track how many airports you have visited and narrow down the location.</li>
+            </ul>
+            <p>Find the Boss Arena before your battery runs out to claim victory.</p>
+        </section>
+
+        <section id="show-about-us" class="panel-content hidden">
+            <h2>About Us</h2>
+            <p class="subtitle">Built with love by the BossFlights crew:</p>
+            <ul class="team-list">
+                <li>Kim</li>
+                <li>Lassi</li>
+                <li>Eeli</li>
+                <li>Tuukka</li>
+            </ul>
+        </section>
+    </div>
+</main>
+
+<footer>
+    <p> BossFlights &copy; 2025</p>
+</footer>
+
+</body>
+</html>

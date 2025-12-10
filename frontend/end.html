@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/endscreen.css">
+    <title>Game Over - BossFlights</title>
+</head>
+<body>
+    <header>
+        <h1 class="logo"><span class="glow">Boss</span>Flights</h1>
+    </header>
+
+    <main class="endscreen-main">
+        <div class="result-title" id="result-title">
+
+        </div>
+
+        <div class="stats-card card">
+            <h2 class="stats-heading">Game Statistics</h2>
+
+            <div class="stats-grid">
+                <div class="stat-row">
+                    <span class="stat-label">Player:</span>
+                    <span class="stat-value glow-text" id="stat-player">-</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Difficulty:</span>
+                    <span class="stat-value" id="stat-difficulty">-</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Puzzles Solved:</span>
+                    <span class="stat-value" id="stat-puzzles">0</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Battery Level:</span>
+                    <span class="stat-value" id="stat-battery">0%</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Starting Airport:</span>
+                    <span class="stat-value" id="stat-start">-</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Final Location:</span>
+                    <span class="stat-value" id="stat-final">-</span>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Boss Airport:</span>
+                    <span class="stat-value" id="stat-boss">-</span>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="goToMenu()">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>BossFlights &copy; 2025</p>
+    </footer>
+
+    <script src="js/endscreen.js"></script>
+</body>
+</html>
