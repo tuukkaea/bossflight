@@ -72,7 +72,7 @@ function formatAirport(airport){
 }
 
 function goToMenu() {
-    window.location.href = 'start.html';
+    window.location.href = 'index.html';
 }
 
 window.addEventListener('DOMContentLoaded', loadGameState);

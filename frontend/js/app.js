@@ -184,7 +184,7 @@ async function initializeGame() {
     
     if(!startMenuData.playerName || !startMenuData.difficulty){
         alert('Please start the game from the start menu so we know who is playing.');
-        window.location.href = 'start.html';
+        window.location.href = 'index.html';
         return;
     }
 
