@@ -1,6 +1,6 @@
 'use strict';
 
-const backend = `https://bossflights-api.up.railway.app:5000`;
+const backend = `https://bossflights-api.up.railway.app`;
 const params = new URLSearchParams(window.location.search);
 const sessionIdParam = params.get('session_id');
 const resultParam = params.get('result');

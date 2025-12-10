@@ -1,7 +1,7 @@
 import { calculateDistance, calculateBearing, getCompassDirection } from './utils.js';
 import { initializeCustomMap, createPurpleMarker } from './map.js';
 
-const API_URL = "https://bossflights-api.up.railway.app:5000/";
+const API_URL = "https://bossflights-api.up.railway.app/";
 
 const urlParams = new URLSearchParams(window.location.search);
 const sessionIdParam = urlParams.get('session_id');
